@@ -14,6 +14,7 @@ const ProductOverviewScreen = (props) => {
 
     //indicate when product is loading
     const [isLoading, setIsLoading] = useState(false)
+    const [isRefreshing, setIsRefreshing] = useState(false)
     const [error, setError] = useState()
 
     //use useSelector provided by react-redux to get the products and supply it to the FlatList
@@ -30,20 +31,23 @@ const ProductOverviewScreen = (props) => {
     }
     const loadProducts = useCallback(async () => {
 
-        setIsLoading(true)
+        //setIsLoading(true)
+        setIsRefreshing(true)
         try {
             //check if there are any error by wrapping in a try block
             await dispatch(fetchProducts())
         } catch (err) {
             setError(err.message)
         }
-        setIsLoading(false)
+        setIsRefreshing(false)
 
     }, [dispatch, error, setIsLoading])
 
     useEffect(() => {
-
-        loadProducts()
+        setIsLoading(true)
+        loadProducts().then(() =>{
+            setIsLoading(false)
+        })
 
     }, [dispatch, loadProducts])
 
@@ -85,6 +89,8 @@ const ProductOverviewScreen = (props) => {
         //our FlatList for displaying our products
 
         <FlatList
+            onRefresh={loadProducts}
+            refreshing={isRefreshing}
             data={products}
             //This below line is optional
             keyExtractor={item => item.id}

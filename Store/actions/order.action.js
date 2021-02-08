@@ -1,4 +1,41 @@
+import Product from "../../Models/Product";
+import Order from "../../Models/Order";
+
 export const ADD_ORDER = 'ADD_ORDER'
+export const SET_ORDERS = 'SET_ORDERS'
+
+
+export const fetchOrders = () => {
+    return async dispatch => {
+        try {
+            const response = await fetch(
+                'https://rn-shop-app-7fde4-default-rtdb.firebaseio.com/orders/u1.json',
+                {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error('Something went wrong!');
+            }
+
+            const resData = await response.json();
+            const loadedOrders = []
+            for (const key in resData) {
+                loadedOrders.push(new Order(key, resData[key].cartItems, resData[key].totalAmount, new Date(resData[key].date)))
+
+            }
+
+            dispatch({type: SET_ORDERS, orders: loadedOrders})
+        } catch (e) {
+            throw e
+        }
+    }
+}
+
 export const addOrders = (cartItems, totalAmount) => {
     return async dispatch => {
         const date = new Date();
